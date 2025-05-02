@@ -485,22 +485,6 @@ public class Map {
 
 
 
-
-
-
-
-    public Cell[][] getOgreMap() {
-        return ogreMap;
-    }
-
-    public Cell[][] getRuinMap() {
-        return ruinMap;
-    }
-
-    public Cell[][] getFrozenMap() {
-        return frozenMap;
-    }
-
     public void setPlayer(Player player) {
         this.player = player;
     }
