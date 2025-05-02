@@ -8,6 +8,7 @@ public class Player {
         OGRE_LANDS,
         RUINS,
         FROZEN_MAP,
+        FIGHT_MAP
     }
 
     private int x;

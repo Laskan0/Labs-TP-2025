@@ -9,9 +9,12 @@ public class Map {
     private final Cell[][] clearRuinMap;
     private final Cell[][] frozenMap;
     private final Cell[][] clearFrozenMap;
+    private final Cell[][] fightMap;
+    private final Cell[][] clearFightMap;
     private final int OGRE_MAP_SIZE = 8;
     private final int RUINS_MAP_SIZE = 5;
     private final int FROZEN_MAP_SIZE = 8;
+    private final int FIGHT_MAP_SIZE = 5;
     private Player player;
 
     public Map() {
@@ -21,15 +24,15 @@ public class Map {
         clearRuinMap = new Cell[RUINS_MAP_SIZE][RUINS_MAP_SIZE];
         frozenMap = new Cell[FROZEN_MAP_SIZE][FROZEN_MAP_SIZE];
         clearFrozenMap = new Cell[FROZEN_MAP_SIZE][FROZEN_MAP_SIZE];
-
-
-
+        fightMap = new Cell[FIGHT_MAP_SIZE][FIGHT_MAP_SIZE];
+        clearFightMap = new Cell[FIGHT_MAP_SIZE][FIGHT_MAP_SIZE];
         createMaps();
     }
     private void createMaps() {
         createOgreMap();
         createRuinMap();
         createFrozenMap();
+        createFightMap();
     }
 
     private void createOgreMap() {
@@ -371,6 +374,14 @@ public class Map {
 
     }
 
+    private void createFightMap() {
+        for (int x = 0; x < FIGHT_MAP_SIZE; x++) {
+            for (int y = 0; y < FIGHT_MAP_SIZE; y++) {
+                fightMap[x][y] = new Cell("-");
+                fightMap[x][y] = new Cell("-");
+            }
+        }
+    }
 
 
 
@@ -395,6 +406,11 @@ public class Map {
                 currentMap = frozenMap;
                 clearMap = clearFrozenMap;
                 size = FROZEN_MAP_SIZE;
+                break;
+            case FIGHT_MAP:
+                currentMap = fightMap;
+                clearMap = clearFightMap;
+                size = FIGHT_MAP_SIZE;
                 break;
 
         }
@@ -444,6 +460,7 @@ public class Map {
             case OGRE_LANDS -> OGRE_MAP_SIZE;
             case RUINS -> RUINS_MAP_SIZE;
             case FROZEN_MAP -> FROZEN_MAP_SIZE;
+            case FIGHT_MAP ->  FIGHT_MAP_SIZE;
         };
     }
 
@@ -452,6 +469,7 @@ public class Map {
             case OGRE_LANDS -> OGRE_MAP_SIZE;
             case RUINS -> RUINS_MAP_SIZE;
             case FROZEN_MAP -> FROZEN_MAP_SIZE;
+            case FIGHT_MAP -> FIGHT_MAP_SIZE;
         };
     }
 
@@ -460,6 +478,7 @@ public class Map {
             case OGRE_LANDS -> ogreMap; // что за стрелочки??
             case RUINS -> ruinMap;
             case FROZEN_MAP -> frozenMap;
+            case FIGHT_MAP -> fightMap;
 
         };
     }
