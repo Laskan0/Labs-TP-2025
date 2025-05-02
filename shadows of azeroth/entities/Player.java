@@ -8,7 +8,6 @@ public class Player {
         OGRE_LANDS,
         RUINS,
         FROZEN_MAP,
-        FIGHT_MAP
     }
 
     private int x;
@@ -49,10 +48,7 @@ public class Player {
                 System.out.println("Текущая свага: " + health);
             }
 
-            if (map.isCellOccupiedBySpirit(newX, newY)) {
-                System.out.println("Вы не можете войти в клетку, где находится дух!");
-                return false;
-            }
+
 
 
             x = newX;

@@ -23,14 +23,7 @@ public class Main {
             String input = scanner.nextLine().toLowerCase();
 
 
-            if (player.getCurrentMapType() == Player.MapType.FIGHT_MAP) {
-                // На боевой карте есть ограничение ходов
-                if (player.getMovesLeft() <= 0) {
-                    System.out.println("Сейчас ход призраков!");
-                    player.resetMoves(); // Сброс ходов после хода призраков
-                    continue;
-                }
-            }
+
 
 
             switch (input) {
@@ -38,28 +31,14 @@ public class Main {
                     int dx = input.equals("w") ? -1 : input.equals("s") ? 1 : 0;
                     int dy = input.equals("a") ? -1 : input.equals("d") ? 1 : 0;
 
-                    if (player.getCurrentMapType() == Player.MapType.FIGHT_MAP) {
-                        // На боевой карте используем лимит ходов
-                        if (player.useMove()) { // Используем ход
-                            if (player.playerMove(dx, dy, map)) {
-                                map.displayCurrentMap(player);
-                                checkEvents(player, dialogs, map, scanner, quests, bossBattle);
-                            } else {
-                                System.out.println("Движение невозможно!");
-                                map.displayCurrentMap(player);
-                            }
-                        } else {
-                            System.out.println("У вас нет ходов для движения!");
-                        }
-                    } else {
                         // На других картах нет ограничения ходов
-                        if (player.playerMove(dx, dy, map)) {
-                            map.displayCurrentMap(player);
-                            checkEvents(player, dialogs, map, scanner, quests, bossBattle);
-                        } else {
-                            System.out.println("Движение невозможно!");
-                            map.displayCurrentMap(player);
-                        }
+                    if (player.playerMove(dx, dy, map)) {
+                        map.displayCurrentMap(player);
+                        checkEvents(player, dialogs, map, scanner, quests, bossBattle);
+                    }
+                    else {
+                        System.out.println("Движение невозможно!");
+                        map.displayCurrentMap(player);
                     }
                     break;
 
@@ -68,22 +47,19 @@ public class Main {
                     System.out.println("ВЫПИТЬ ЗЕЛЬЕ? 1 - здоровья; 2-атаки");
                     String potions = scanner.nextLine().toLowerCase();
                     if (potions.equals("1")) {
-                        if (player.useMove()) { // Используем ход
-                            player.setHealth(player.getHealth() + 50);
-                            player.setHealingPotion(player.getHealingPotion() - 1);
-                            map.displayCurrentMap(player);
-                        } else {
-                            System.out.println("У вас нет ходов для использования зелий!");
-                        }
-                    } else if (potions.equals("2")) {
-                        if (player.useMove()) { // Используем ход
-                            player.setDmg(player.getDmg() + 25);
-                            player.setBoostDmgPotion(player.getBoostDmgPotion() - 1);
-                            map.displayCurrentMap(player);
-                        } else {
-                            System.out.println("У вас нет ходов для использования зелий!");
-                        }
-                    } else {
+                        player.setHealth(player.getHealth() + 50);
+                        player.setHealingPotion(player.getHealingPotion() - 1);
+                        map.displayCurrentMap(player);
+
+                    }
+
+                    else if (potions.equals("2")) {
+                    player.setDmg(player.getDmg() + 25);
+                    player.setBoostDmgPotion(player.getBoostDmgPotion() - 1);
+                    map.displayCurrentMap(player);
+
+                    }
+                    else {
                         map.displayCurrentMap(player);
                     }
                     break;
@@ -124,9 +100,7 @@ public class Main {
                     map.displayCurrentMap(player);
                 }
                 break;
-            case FIGHT_MAP:
-                // Логика боя уже обрабатывается в основном цикле
-                break;
+
         }
 
         handleMapTransition(scanner, map, player);
@@ -183,9 +157,6 @@ public class Main {
         String choice = scanner.nextLine();
         if (choice.equals("1")) {
             quests.startFirstQuest(player);
-
-            // Если игрок попал на боевую карту, запускаем бой
-
         }
     }
 
@@ -207,9 +178,6 @@ public class Main {
                 if (player.getX() == 7 && player.getY() == 7) { // Возврат в долину огров
                     transitionToMap(scanner, map, player, Player.MapType.OGRE_LANDS, 0, 5);
                 }
-                break;
-            case FIGHT_MAP:
-                // Нет переходов с боевой карты
                 break;
         }
     }

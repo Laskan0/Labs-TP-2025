@@ -9,14 +9,10 @@ public class Map {
     private final Cell[][] clearRuinMap;
     private final Cell[][] frozenMap;
     private final Cell[][] clearFrozenMap;
-    private final Cell[][] fightMap;
-    private final Cell[][] clearFightMap;
     private final int OGRE_MAP_SIZE = 8;
     private final int RUINS_MAP_SIZE = 5;
     private final int FROZEN_MAP_SIZE = 8;
-    private final int FIGHT_MAP_SIZE = 5;
     private Player player;
-    private Spirit[] spirits;
 
     public Map() {
         ogreMap = new Cell[OGRE_MAP_SIZE][OGRE_MAP_SIZE];
@@ -25,17 +21,15 @@ public class Map {
         clearRuinMap = new Cell[RUINS_MAP_SIZE][RUINS_MAP_SIZE];
         frozenMap = new Cell[FROZEN_MAP_SIZE][FROZEN_MAP_SIZE];
         clearFrozenMap = new Cell[FROZEN_MAP_SIZE][FROZEN_MAP_SIZE];
-        fightMap = new Cell[FIGHT_MAP_SIZE][FIGHT_MAP_SIZE];
-        clearFightMap = new Cell[FIGHT_MAP_SIZE][FIGHT_MAP_SIZE];
 
-        spirits = new Spirit[2]; // Инициализация массива духов
+
+
         createMaps();
     }
     private void createMaps() {
         createOgreMap();
         createRuinMap();
         createFrozenMap();
-        createFightMap();
     }
 
     private void createOgreMap() {
@@ -377,20 +371,7 @@ public class Map {
 
     }
 
-    private void createFightMap() {
-        for (int x = 0; x < FIGHT_MAP_SIZE; x++) {
-            for (int y = 0; y < FIGHT_MAP_SIZE; y++) {
-                fightMap[x][y] = new Cell("-");
-                clearFightMap[x][y] = new Cell("-");
-            }
-        }
-        initializeSpirits(); // Инициализация духов
-    }
 
-    private void initializeSpirits() {
-        spirits[0] = new Spirit(1, 1); // Первый дух
-        spirits[1] = new Spirit(3, 3); // Второй дух
-    }
 
 
     public void displayCurrentMap(Player player) {
@@ -415,11 +396,7 @@ public class Map {
                 clearMap = clearFrozenMap;
                 size = FROZEN_MAP_SIZE;
                 break;
-            case FIGHT_MAP:
-                currentMap = fightMap;
-                clearMap = clearFightMap;
-                size = FIGHT_MAP_SIZE;
-                break;
+
         }
 
         // Сбрасываем карту к исходному состоянию
@@ -428,14 +405,6 @@ public class Map {
         // Обновляем позицию игрока
         updatePlayerPosition(currentMap, player.getX(), player.getY());
 
-        // Если это боевая карта, добавляем духов
-        if (player.getCurrentMapType() == Player.MapType.FIGHT_MAP) {
-            for (Spirit spirit : spirits) {
-                if (spirit != null) {
-                    currentMap[spirit.getX()][spirit.getY()].setCelltype("S"); // Символ духа
-                }
-            }
-        }
 
         // Рисуем карту
         drawMap(currentMap, size);
@@ -475,7 +444,6 @@ public class Map {
             case OGRE_LANDS -> OGRE_MAP_SIZE;
             case RUINS -> RUINS_MAP_SIZE;
             case FROZEN_MAP -> FROZEN_MAP_SIZE;
-            case FIGHT_MAP -> FIGHT_MAP_SIZE;
         };
     }
 
@@ -484,7 +452,6 @@ public class Map {
             case OGRE_LANDS -> OGRE_MAP_SIZE;
             case RUINS -> RUINS_MAP_SIZE;
             case FROZEN_MAP -> FROZEN_MAP_SIZE;
-            case FIGHT_MAP -> FIGHT_MAP_SIZE;
         };
     }
 
@@ -493,56 +460,13 @@ public class Map {
             case OGRE_LANDS -> ogreMap; // что за стрелочки??
             case RUINS -> ruinMap;
             case FROZEN_MAP -> frozenMap;
-            case FIGHT_MAP -> fightMap; // Если есть боевая карта
+
         };
     }
 
-    public void removeSpirit(Spirit spirit) {
-        if (spirit != null) {
-            fightMap[spirit.getX()][spirit.getY()].setCelltype("-"); // Устанавливаем клетку как пустую
 
-            for (int i = 0; i < spirits.length; i++) {
-                if (spirits[i] == spirit) {
-                    spirits[i] = null; // Удаляем духа из массива
-                    break;
-                }
-            }
-        }
-    }
 
-    public void updateSpiritsOnMap() {
-        // Полная очистка предыдущих позиций
-        Cell[][] fightGrid = getCurrentMapGrid(Player.MapType.FIGHT_MAP);
-        for (int x = 0; x < fightGrid.length; x++) {
-            for (int y = 0; y < fightGrid[x].length; y++) {
-                if (fightGrid[x][y].getCelltype().equals("S")) {
-                    fightGrid[x][y].setCelltype("-");
-                }
-            }
-        }
 
-        // Обновление позиций
-        for (Spirit spirit : spirits) {
-            if (spirit != null) {
-                int x = spirit.getX();
-                int y = spirit.getY();
-                if (x >= 0 && x < fightGrid.length && y >= 0 && y < fightGrid[0].length) {
-                    fightGrid[x][y].setCelltype("S");
-                }
-            }
-        }
-    }
-
-    public boolean isCellOccupiedBySpirit(int x, int y) {
-        if (player.getCurrentMapType() == Player.MapType.FIGHT_MAP) {
-            for (Spirit spirit : spirits) {
-                if (spirit != null && spirit.isAtPosition(x, y)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
 
 
@@ -560,10 +484,6 @@ public class Map {
 
     public void setPlayer(Player player) {
         this.player = player;
-    }
-
-    public Spirit[] getSpirits() {
-        return spirits;
     }
 
 
