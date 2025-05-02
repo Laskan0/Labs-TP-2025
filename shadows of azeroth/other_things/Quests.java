@@ -26,31 +26,31 @@ public class Quests {
 
     private int questState = 0;
 
-    private Scanner scanner;
+    private final Scanner scanner;
 
     public Quests(Scanner scanner) {
         this.scanner = scanner;
     }
 
-    public void startFirstQuest(Player player, SpiritFight fight) {
+    public void startFirstQuest(Player player) {
         System.out.println(introduction);
 
         while (questState < 3) {
             switch (questState) {
                 case 0:
-                    if (!solveRiddle(firstQuestRiddle, firstQuestAnswer, fight, player)) {
+                    if (!solveRiddle(firstQuestRiddle, firstQuestAnswer, player)) {
                         return; // Выходим из метода, если игрок дал неправильный ответ
                     }
                     questState++;
                     break;
                 case 1:
-                    if (!solveRiddle(secondQuestRiddle, secondQuestAnswer, fight, player)) {
+                    if (!solveRiddle(secondQuestRiddle, secondQuestAnswer, player)) {
                         return; // Выходим из метода, если игрок дал неправильный ответ
                     }
                     questState++;
                     break;
                 case 2:
-                    if (!solveRiddle(thirdQuestRiddle, thirdQuestAnswer, fight, player)) {
+                    if (!solveRiddle(thirdQuestRiddle, thirdQuestAnswer, player)) {
                         return; // Выходим из метода, если игрок дал неправильный ответ
                     }
                     questState++;
@@ -64,7 +64,7 @@ public class Quests {
         }
     }
 
-    private boolean solveRiddle(String riddle, String correctAnswer, SpiritFight fight, Player player) {
+    private boolean solveRiddle(String riddle, String correctAnswer, Player player) {
         while (true) {
             System.out.println(riddle);
             System.out.print("Ваш ответ: ");
@@ -76,26 +76,10 @@ public class Quests {
             } else {
                 System.out.println("Твои намерения скрыты тенью. Попробуй снова, если желаешь заслужить доверие предков");
 
-                // Запуск боевой карты
-                Player.MapType previousMap = player.getCurrentMapType();
-                int prevX = player.getX();
-                int prevY = player.getY();
-
-                fight.startSpiritFight(previousMap, prevX, prevY);
-                return false; // Неправильный ответ, завершаем загадку
             }
         }
     }
 
-    public boolean hasArtifact() {
-        return hasArtifact;
-    }
 
-    public boolean isReadyToFight() {
-        return readyToFight;
-    }
 
-    public void setReadyToFight(boolean readyToFight) {
-        this.readyToFight = readyToFight;
-    }
 }

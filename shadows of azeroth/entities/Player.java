@@ -2,7 +2,6 @@ package entities;
 
 import maps.Map;
 import maps.Cell;
-import other_things.SpiritFight;
 
 public class Player {
     public enum MapType {
@@ -61,38 +60,6 @@ public class Player {
             return true;
         }
         return false; // Если вышли за границы карты
-    }
-
-    // Метод для атаки мечом
-    public void swordAttack(int dx, int dy, Map map, SpiritFight fight) {
-        int targetX = getX() + dx;
-        int targetY = getY() + dy;
-
-        for (Spirit spirit : map.getSpirits()) {
-            if (spirit != null && spirit.isAtPosition(targetX, targetY)) {
-                System.out.println("Дух атакован!");
-                map.removeSpirit(spirit);
-                break;
-            }
-        }
-        fight.checkSpiritHit();
-    }
-
-    // Метод для сплеш-атаки
-    public void splashAttack(Map map,SpiritFight fight) {
-        Cell[][] currentGrid = map.getCurrentMapGrid(currentMap);
-        System.out.println("DEBUG: Сплеш-атака вокруг (" + x + "," + y + ")");
-        // Проверка клеток в радиусе 2 клеток
-        for (int i = x - 2; i <= x + 2; i++) {
-            for (int j = y - 2; j <= y + 2; j++) {
-                if (i >= 0 && i < currentGrid.length && j >= 0 && j < currentGrid[0].length) {
-                    if (currentGrid[i][j].getCelltype().equals("\uD83D\uDC7B")) {
-                        System.out.println("DEBUG: Уничтожен дух на (" + i + "," + j + ")");
-                    }
-                }
-            }
-        }
-
     }
 
     // Метод для отображения состояния игрока
@@ -181,9 +148,6 @@ public class Player {
         return movesLeft;
     }
 
-    public void setMovesLeft(int movesLeft) {
-        this.movesLeft = movesLeft;
-    }
 
     public void resetMoves() {
         this.movesLeft =3;

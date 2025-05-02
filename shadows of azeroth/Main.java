@@ -1,13 +1,9 @@
-import entities.Spirit;
 import maps.Map;
 import entities.Player;
 import other_things.Diologies;
 import java.util.Scanner;
 import other_things.Quests;
 import other_things.BossBattle;
-import other_things.SpiritFight;
-import entities.Spirit;
-
 public class Main {
     public static void main(String[] args) {
         Map map = new Map();
@@ -17,7 +13,6 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         Quests quests = new Quests(scanner);
         BossBattle bossBattle = new BossBattle();
-        SpiritFight fight = new SpiritFight(map, player);
         boolean gameOver = false;
 
         dialogs.displayProlog();
@@ -32,7 +27,6 @@ public class Main {
                 // На боевой карте есть ограничение ходов
                 if (player.getMovesLeft() <= 0) {
                     System.out.println("Сейчас ход призраков!");
-                    fight.handleEnemyTurn();
                     player.resetMoves(); // Сброс ходов после хода призраков
                     continue;
                 }
@@ -49,7 +43,7 @@ public class Main {
                         if (player.useMove()) { // Используем ход
                             if (player.playerMove(dx, dy, map)) {
                                 map.displayCurrentMap(player);
-                                checkEvents(player, dialogs, map, scanner, quests, bossBattle, fight);
+                                checkEvents(player, dialogs, map, scanner, quests, bossBattle);
                             } else {
                                 System.out.println("Движение невозможно!");
                                 map.displayCurrentMap(player);
@@ -61,39 +55,11 @@ public class Main {
                         // На других картах нет ограничения ходов
                         if (player.playerMove(dx, dy, map)) {
                             map.displayCurrentMap(player);
-                            checkEvents(player, dialogs, map, scanner, quests, bossBattle, fight);
+                            checkEvents(player, dialogs, map, scanner, quests, bossBattle);
                         } else {
                             System.out.println("Движение невозможно!");
                             map.displayCurrentMap(player);
                         }
-                    }
-                    break;
-
-                case "1": // Атака мечом
-                    if (player.getCurrentMapType() == Player.MapType.FIGHT_MAP) {
-                        if (player.useMove()) { // Используем ход
-                            System.out.println("Выберите направление (w/a/s/d):");
-                            String direction = scanner.nextLine().toLowerCase();
-                            int attackDx = direction.equals("w") ? -1 : direction.equals("s") ? 1 : 0;
-                            int attackDy = direction.equals("a") ? -1 : direction.equals("d") ? 1 : 0;
-                            player.swordAttack(attackDx, attackDy, map,fight);
-                        } else {
-                            System.out.println("У вас нет ходов для атаки!");
-                        }
-                    } else {
-                        System.out.println("Атаковать можно только на боевой карте!");
-                    }
-                    break;
-
-                case "2": // Сплеш-атака
-                    if (player.getCurrentMapType() == Player.MapType.FIGHT_MAP) {
-                        if (player.useMove()) { // Используем ход
-                            player.splashAttack(map,fight);
-                        } else {
-                            System.out.println("У вас нет ходов для сплеш-атаки!");
-                        }
-                    } else {
-                        System.out.println("Сплеш-атака доступна только на боевой карте!");
                     }
                     break;
 
@@ -134,17 +100,11 @@ public class Main {
                 System.out.println("Ты пал в бою... Орда скорбит.");
                 gameOver = true;
             }
-
-            // Обработка хода противников на боевой карте
-            if (player.getCurrentMapType() == Player.MapType.FIGHT_MAP) {
-                fight.handleEnemyTurn();
-
-            }
         }
         scanner.close();
     }
 
-    private static void checkEvents(Player player, Diologies dialogs, Map map, Scanner scanner, Quests quests, BossBattle battle, SpiritFight fight) {
+    private static void checkEvents(Player player, Diologies dialogs, Map map, Scanner scanner, Quests quests, BossBattle battle) {
         switch (player.getCurrentMapType()) {
             case OGRE_LANDS:
                 if (player.getX() == 3 && player.getY() == 2) { // Тралл
@@ -155,7 +115,7 @@ public class Main {
                 break;
             case RUINS:
                 if (player.getX() == 2 && player.getY() == 2) { // Гробница
-                    handleFirstQuest(quests, map, scanner, player, fight);
+                    handleFirstQuest(quests, map, scanner, player);
                 }
                 break;
             case FROZEN_MAP:
@@ -218,16 +178,14 @@ public class Main {
         }
     }
 
-    private static void handleFirstQuest(Quests quests, Map map, Scanner scanner, Player player, SpiritFight fight) {
+    private static void handleFirstQuest(Quests quests, Map map, Scanner scanner, Player player) {
         System.out.println("Начать квест? (1 - да, 2 - нет)");
         String choice = scanner.nextLine();
         if (choice.equals("1")) {
-            quests.startFirstQuest(player, fight);
+            quests.startFirstQuest(player);
 
             // Если игрок попал на боевую карту, запускаем бой
-            if (player.getCurrentMapType() == Player.MapType.FIGHT_MAP) {
-                fight.startSpiritFight(player.getCurrentMapType(), player.getX(), player.getY());
-            }
+
         }
     }
 
