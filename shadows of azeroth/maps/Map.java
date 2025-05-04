@@ -134,6 +134,8 @@ public class Map {
         ogreMap[0][5].setCelltype("\uD83C\uDF0C");
         clearOgreMap[2][7].setCelltype("\uD80C\uDE78");
         clearOgreMap[0][5].setCelltype("\uD83C\uDF0C");
+        ogreMap[6][3].setCelltype("🛒");
+        clearOgreMap[6][3].setCelltype("🛒");
 
         // Кузнец
         ogreMap[1][4].setCelltype("⚒\uFE0F");

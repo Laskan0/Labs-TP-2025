@@ -81,6 +81,9 @@ public class Main {
                 } else if (player.getX() == 1 && player.getY() == 4) {
                     handleSmithDialog(dialogs, map, scanner, player);
                 }
+                else if (player.getX() == 6 && player.getY() == 3) {
+                    handleShop(map, player, scanner);
+                }
                 break;
             case RUINS:
                 if (player.getX() == 2 && player.getY() == 2) {
@@ -102,6 +105,10 @@ public class Main {
                     );
 
                     new BattleMap(map, player, minions, "\uD83D\uDC80").runBattle();
+
+                    int rewardMinions = 30;
+                    player.addCoins(rewardMinions);
+                    System.out.println("Вы победили приспешников и получили " + rewardMinions + " монет! Всего монет: " + player.getCoins());
 
                     // После победы — возвращаем на карту
                     player.setCurrentMapType(Player.MapType.FROZEN_MAP);
@@ -172,14 +179,26 @@ public class Main {
                         new Enemy("Дух 3", 30, 5)
                 );
 
-                new BattleMap(map, player, spirits, "\uD83D\uDC7B").runBattle();
+                new BattleMap(map, player, spirits, "👻").runBattle();
 
+                // Награда за победу над духами
+                int rewardSpirits = 20;
+                player.addCoins(rewardSpirits);
+                System.out.println("Вы победили духов и получили " + rewardSpirits + " монет! Всего монет: " + player.getCoins());
+
+                // возвращаем игрока
                 player.setCurrentMapType(Player.MapType.OGRE_LANDS);
                 map.setPlayer(player);
                 map.displayCurrentMap(player);
+            } else {
+                // Награда за успех в разгадках
+                int rewardRiddles = 50;
+                player.addCoins(rewardRiddles);
+                System.out.println("Вы успешно решили все загадки и получили " + rewardRiddles + " монет! Всего монет: " + player.getCoins());
             }
         }
     }
+
 
     private static void handleMapTransition(Scanner scanner, Map map, Player player) {
         switch (player.getCurrentMapType()) {
@@ -202,6 +221,47 @@ public class Main {
                 break;
         }
     }
+
+    private static void handleShop(Map map, Player player, Scanner scanner) {
+        boolean inShop = true;
+        while (inShop) {
+            map.displayCurrentMap(player);
+            System.out.println("Торговец зельями предлагает:");
+            System.out.println("1) Зелье сваги (+50 HP) — 25 монет");
+            System.out.println("2) Зелье хайпа (+25 урона) — 50 монет");
+            System.out.println("0) Уйти");
+            System.out.print("Ваш выбор: ");
+            String choice = scanner.nextLine().trim();
+            switch (choice) {
+                case "1":
+                    if (player.getCoins() >= 25) {
+                        player.addCoins(-25);
+                        player.setHealth(player.getHealth() + 50);
+                        System.out.println("Вы купили зелье сваги! Монет осталось: " + player.getCoins());
+                    } else {
+                        System.out.println("Недостаточно монет!");
+                    }
+                    break;
+                case "2":
+                    if (player.getCoins() >= 50) {
+                        player.addCoins(-50);
+                        player.setDmg(player.getDmg() + 25);
+                        System.out.println("Вы купили зелье хайпа! Монет осталось: " + player.getCoins());
+                    } else {
+                        System.out.println("Недостаточно монет!");
+                    }
+                    break;
+                case "0":
+                    inShop = false;
+                    map.displayCurrentMap(player);
+                    break;
+                default:
+                    System.out.println("Неверный выбор!");
+            }
+        }
+    }
+
+
 
     private static void transitionToMap(Scanner scanner, Map map, Player player, Player.MapType targetMap, int startX, int startY) {
         System.out.println("Перейти? (1 - да, 2 - нет)");

@@ -20,6 +20,7 @@ public class Player {
     private int healingPotion = 3;
     private int boostDmgPotion = 2;
     private int movesLeft = 3;
+    private int coins = 0;
 
     public Player(int startX, int startY) {
         this.x = startX;
@@ -77,7 +78,9 @@ public class Player {
     }
 
 
-
+    public void addCoins(int amount) {
+        coins += amount;
+    }
 
     // Геттеры и сеттеры
     public int getX() {
@@ -150,5 +153,8 @@ public class Player {
         this.movesLeft =3;
     }
 
+    public int getCoins(){
+        return coins;
+    }
 
 }
