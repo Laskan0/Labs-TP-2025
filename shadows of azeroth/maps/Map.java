@@ -377,11 +377,13 @@ public class Map {
     private void createFightMap() {
         for (int x = 0; x < FIGHT_MAP_SIZE; x++) {
             for (int y = 0; y < FIGHT_MAP_SIZE; y++) {
-                fightMap[x][y] = new Cell("-");
-                fightMap[x][y] = new Cell("-");
+                Cell empty = new Cell("-");
+                fightMap[x][y]      = empty;
+                clearFightMap[x][y] = new Cell(empty.getCelltype());
             }
         }
     }
+
 
 
 
@@ -481,6 +483,18 @@ public class Map {
             case FIGHT_MAP -> fightMap;
 
         };
+    }
+
+    public void resetFightMap() {
+        for (int x = 0; x < FIGHT_MAP_SIZE; x++) {
+            for (int y = 0; y < FIGHT_MAP_SIZE; y++) {
+                fightMap[x][y].setCelltype(clearFightMap[x][y].getCelltype());
+            }
+        }
+    }
+
+    public void setFightCell(int x, int y, String symbol) {
+        fightMap[x][y].setCelltype(symbol);
     }
 
 

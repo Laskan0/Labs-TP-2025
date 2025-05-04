@@ -4,11 +4,15 @@ import other_things.Diologies;
 import java.util.Scanner;
 import other_things.Quests;
 import other_things.BossBattle;
+import java.util.List;
+import entities.Enemy;
+import maps.BattleMap;
+
 public class Main {
     public static void main(String[] args) {
         Map map = new Map();
         Player player = new Player(0, 0);
-        map.setPlayer(player);// Начальная позиция на карте огров
+        map.setPlayer(player);
         Diologies dialogs = new Diologies();
         Scanner scanner = new Scanner(System.in);
         Quests quests = new Quests(scanner);
@@ -22,27 +26,21 @@ public class Main {
             System.out.println("Управляй: w/a/s/d (ход), 1 (атака мечом), 2 (сплеш), p (состояние)");
             String input = scanner.nextLine().toLowerCase();
 
-
-
-
-
             switch (input) {
-                case "w", "s", "a", "d": // Движение
+                case "w", "s", "a", "d":
                     int dx = input.equals("w") ? -1 : input.equals("s") ? 1 : 0;
                     int dy = input.equals("a") ? -1 : input.equals("d") ? 1 : 0;
 
-                        // На других картах нет ограничения ходов
                     if (player.playerMove(dx, dy, map)) {
                         map.displayCurrentMap(player);
                         checkEvents(player, dialogs, map, scanner, quests, bossBattle);
-                    }
-                    else {
+                    } else {
                         System.out.println("Движение невозможно!");
                         map.displayCurrentMap(player);
                     }
                     break;
 
-                case "p": // Просмотр состояния
+                case "p":
                     player.player_condition();
                     System.out.println("ВЫПИТЬ ЗЕЛЬЕ? 1 - здоровья; 2-атаки");
                     String potions = scanner.nextLine().toLowerCase();
@@ -50,16 +48,11 @@ public class Main {
                         player.setHealth(player.getHealth() + 50);
                         player.setHealingPotion(player.getHealingPotion() - 1);
                         map.displayCurrentMap(player);
-
-                    }
-
-                    else if (potions.equals("2")) {
-                    player.setDmg(player.getDmg() + 25);
-                    player.setBoostDmgPotion(player.getBoostDmgPotion() - 1);
-                    map.displayCurrentMap(player);
-
-                    }
-                    else {
+                    } else if (potions.equals("2")) {
+                        player.setDmg(player.getDmg() + 25);
+                        player.setBoostDmgPotion(player.getBoostDmgPotion() - 1);
+                        map.displayCurrentMap(player);
+                    } else {
                         map.displayCurrentMap(player);
                     }
                     break;
@@ -83,24 +76,39 @@ public class Main {
     private static void checkEvents(Player player, Diologies dialogs, Map map, Scanner scanner, Quests quests, BossBattle battle) {
         switch (player.getCurrentMapType()) {
             case OGRE_LANDS:
-                if (player.getX() == 3 && player.getY() == 2) { // Тралл
+                if (player.getX() == 3 && player.getY() == 2) {
                     handleThrallDialog(dialogs, map, scanner, player);
-                } else if (player.getX() == 1 && player.getY() == 4) { // Кузнец
+                } else if (player.getX() == 1 && player.getY() == 4) {
                     handleSmithDialog(dialogs, map, scanner, player);
                 }
                 break;
             case RUINS:
-                if (player.getX() == 2 && player.getY() == 2) { // Гробница
+                if (player.getX() == 2 && player.getY() == 2) {
                     handleFirstQuest(quests, map, scanner, player);
                 }
                 break;
             case FROZEN_MAP:
-                if (player.getX() == 4 && player.getY() == 4) { // Босс
+                if (player.getX() == 4 && player.getY() == 4) {
                     battle.startBattle(player);
+                    map.displayCurrentMap(player);
+                } else if (player.getX() == 4 && player.getY() == 3) {
+                    // Запускаем бой с приспешниками лича
+                    System.out.println("Приспешники Лича преграждают путь! Битва начинается...");
+
+                    List<Enemy> minions = List.of(
+                            new Enemy("Приспешник 1", 40, 10),
+                            new Enemy("Приспешник 2", 40, 10),
+                            new Enemy("Приспешник 3", 40, 10)
+                    );
+
+                    new BattleMap(map, player, minions, "\uD83D\uDC80").runBattle();
+
+                    // После победы — возвращаем на карту
+                    player.setCurrentMapType(Player.MapType.FROZEN_MAP);
+                    map.setPlayer(player);
                     map.displayCurrentMap(player);
                 }
                 break;
-
         }
 
         handleMapTransition(scanner, map, player);
@@ -119,8 +127,7 @@ public class Main {
                 if (dialogs.canProgressThrallDialog()) {
                     dialogs.moveToNextThrallStage();
                 }
-
-                if(dialogs.getThrallStage() == 0) {
+                if (dialogs.getThrallStage() == 0) {
                     dialogs.setThrallStage(1);
                 }
             } else {
@@ -142,7 +149,6 @@ public class Main {
                 if (dialogs.canProgressSmithStory(player)) {
                     dialogs.moveToNextSmithStage(player);
                 }
-
                 if (dialogs.getSmithStage() == 0) {
                     dialogs.setSmithStage(1);
                 }
@@ -155,27 +161,42 @@ public class Main {
     private static void handleFirstQuest(Quests quests, Map map, Scanner scanner, Player player) {
         System.out.println("Начать квест? (1 - да, 2 - нет)");
         String choice = scanner.nextLine();
-        if (choice.equals("1")) {
-            quests.startFirstQuest(player);
+        if ("1".equals(choice)) {
+            boolean completed = quests.startFirstQuest(player, map);
+            if (!completed) {
+                System.out.println("Духи напали! Переходим в бой...");
+
+                List<Enemy> spirits = List.of(
+                        new Enemy("Дух 1", 30, 5),
+                        new Enemy("Дух 2", 30, 5),
+                        new Enemy("Дух 3", 30, 5)
+                );
+
+                new BattleMap(map, player, spirits, "\uD83D\uDC7B").runBattle();
+
+                player.setCurrentMapType(Player.MapType.OGRE_LANDS);
+                map.setPlayer(player);
+                map.displayCurrentMap(player);
+            }
         }
     }
 
     private static void handleMapTransition(Scanner scanner, Map map, Player player) {
         switch (player.getCurrentMapType()) {
             case OGRE_LANDS:
-                if (player.getX() == 2 && player.getY() == 7) { // Переход в руины
+                if (player.getX() == 2 && player.getY() == 7) {
                     transitionToMap(scanner, map, player, Player.MapType.RUINS, 0, 0);
-                } else if (player.getX() == 0 && player.getY() == 5) { // Переход в ледяные пустоши
+                } else if (player.getX() == 0 && player.getY() == 5) {
                     transitionToMap(scanner, map, player, Player.MapType.FROZEN_MAP, 0, 0);
                 }
                 break;
             case RUINS:
-                if (player.getX() == 4 && player.getY() == 4) { // Возврат в долину огров
+                if (player.getX() == 4 && player.getY() == 4) {
                     transitionToMap(scanner, map, player, Player.MapType.OGRE_LANDS, 2, 7);
                 }
                 break;
             case FROZEN_MAP:
-                if (player.getX() == 7 && player.getY() == 7) { // Возврат в долину огров
+                if (player.getX() == 7 && player.getY() == 7) {
                     transitionToMap(scanner, map, player, Player.MapType.OGRE_LANDS, 0, 5);
                 }
                 break;
