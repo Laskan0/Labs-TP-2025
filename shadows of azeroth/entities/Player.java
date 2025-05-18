@@ -35,10 +35,12 @@ public class Player {
         int maxX = map.getCurrentMapMaxX(currentMap);
         int maxY = map.getCurrentMapMaxY(currentMap);
 
+        // Проверяем границы
         if (newX >= 0 && newX < maxX && newY >= 0 && newY < maxY) {
             Cell[][] currentGrid = map.getCurrentMapGrid(currentMap); // Получаем текущую карту
-            String cellType = currentGrid[newX][newY].getCelltype();
+            String cellType = currentGrid[newX][newY].getCelltype(); // Получаем тип ячейки
 
+            // Проверяем тип новой ячейки
             if (cellType.equals("\uD83C\uDFD5\uFE0F")) { // Палатка
                 System.out.println("Нельзя пройти через палатку!");
                 return false;
@@ -46,18 +48,18 @@ public class Player {
 
             if (cellType.equals("\uD83D\uDD25")) { // Огонь
                 health -= 10;
-                System.out.println("Уебок ты сгорел в адском пламени!");
+                System.out.println("Глупец! Ты сгорел в адском пламени!");
                 System.out.println("Текущая свага: " + health);
             }
 
-
-
-
+            // Все проверки пройдены — обновляем позицию
             x = newX;
             y = newY;
             return true;
         }
-        return false; // Если вышли за границы карты
+
+        // Если выход за границы — движение невозможно
+        return false;
     }
 
     // Метод для отображения состояния игрока

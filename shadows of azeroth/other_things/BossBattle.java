@@ -53,6 +53,9 @@ public class BossBattle {
         int damage = (int) (player.getDmg() * (Math.random() * 1.5 + 0.5));
         if (isExhausted) damage /= 2; // Снижение урона при истощении
         bossHealth -= damage;
+        if(player.isHasArtifact() == false){
+            damage = 0;
+        }
         System.out.println("Нанесено " + damage + " урона. У Лича осталось " + bossHealth + " HP.");
     }
 

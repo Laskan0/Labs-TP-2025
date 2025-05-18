@@ -7,12 +7,38 @@ import other_things.BossBattle;
 import java.util.List;
 import entities.Enemy;
 import maps.BattleMap;
+import maps.Cell;
 
 public class Main {
+
     public static void main(String[] args) {
-        Map map = new Map();
-        Player player = new Player(0, 0);
-        map.setPlayer(player);
+        Scanner choiceScanner = new Scanner(System.in);
+        System.out.println("Выберите тип карты:");
+        System.out.println("1 - Создать новую карту ");
+        System.out.println("2 - Загрузить стандартную карту");
+        System.out.print("Ваш выбор: ");
+
+        String choice = choiceScanner.nextLine().trim();
+
+
+        Map map = null;
+        Player player = null;
+
+        if ("1".equals(choice)) {
+            map = new Map();
+            player = new Player(0, 0);
+            map.setPlayer(player);
+            runMapEditor(map, player);
+        } else if ("2".equals(choice)) {
+            map = new Map();
+            player = new Player(0, 0);
+            map.setPlayer(player);
+            System.out.println("Загружена стандартная карта.");
+        } else {
+            System.out.println("Неверный выбор. Завершение работы.");
+            System.exit(0);
+        }
+
         Diologies dialogs = new Diologies();
         Scanner scanner = new Scanner(System.in);
         Quests quests = new Quests(scanner);
@@ -30,7 +56,6 @@ public class Main {
                 case "w", "s", "a", "d":
                     int dx = input.equals("w") ? -1 : input.equals("s") ? 1 : 0;
                     int dy = input.equals("a") ? -1 : input.equals("d") ? 1 : 0;
-
                     if (player.playerMove(dx, dy, map)) {
                         map.displayCurrentMap(player);
                         checkEvents(player, dialogs, map, scanner, quests, bossBattle);
@@ -70,49 +95,161 @@ public class Main {
                 gameOver = true;
             }
         }
+
         scanner.close();
     }
 
+    private static void runMapEditor(Map map, Player player) {
+        Scanner scanner = new Scanner(System.in);
+        int size = map.getCurrentMapMaxY(Player.MapType.OGRE_LANDS);
+        Cell[][] editorMap = new Cell[size][size];
+
+        // Инициализируем карту лесом
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                editorMap[x][y] = new Cell("\uD83C\uDF32"); // Лес
+            }
+        }
+
+        System.out.println("Почувствуй себя богом, властным над ландшавтным дизайном!!!!");
+        System.out.println("Поставь всех приколов на карту. Смотри, чтобы они не коллизились, иначе другие боги тебя покарают");
+        System.out.println("Карта размером " + size + "x" + size + ".");
+
+        // Список элементов для установки
+        String[] elements = {
+                "\uD83E\uDDCC", // Тралл
+                "⚒\uFE0F",     // Кузнец
+                "🛒",            // Магазин
+                "\uD80C\uDE78", // Переход в RUINS
+                "\uD83C\uDF0C", // Переход в FROZEN_MAP
+                "\uD83D\uDD25", // Костер
+                "\uD83C\uDFD5\uFE0F", // Палатка
+                "\uD83D\uDC38"   // Лягушка
+        };
+
+        String[] elementNames = {
+                "Тралл",
+                "Кузнец",
+                "Магазин",
+                "Переход в Руины",
+                "Переход в Ледяную зону",
+                "Костер",
+                "Палатка",
+                "Лягушка"
+        };
+
+        // Установка элементов по очереди
+        for (int i = 0; i < elements.length; i++) {
+            boolean placed = false;
+
+            while (!placed) {
+                System.out.println("\nТекущая карта:");
+                drawEditorMap(editorMap);
+
+                System.out.println("Установите " + elementNames[i]);
+                System.out.print("Введите координату X: ");
+                int x = -1;
+                try {
+                    x = Integer.parseInt(scanner.nextLine());
+                } catch (NumberFormatException e) {
+                    System.out.println("Неверный формат. Попробуйте снова.");
+                    continue;
+                }
+
+                System.out.print("Введите координату Y: ");
+                int y = -1;
+                try {
+                    y = Integer.parseInt(scanner.nextLine());
+                } catch (NumberFormatException e) {
+                    System.out.println("Неверный формат. Попробуйте снова.");
+                    continue;
+                }
+
+                if (x >= 0 && x < size && y >= 0 && y < size) {
+                    // Проверка: занята ли ячейка
+                    if (!editorMap[x][y].getCelltype().equals("\uD83C\uDF32")) { // Лес
+                        System.out.println("Эта ячейка уже занята. Выберите другие координаты.");
+                        continue;
+                    }
+
+                    editorMap[x][y].setCelltype(elements[i]);
+                    System.out.println(elementNames[i] + " установлен на (" + x + ", " + y + ").");
+                    placed = true;
+                } else {
+                    System.out.println("Координаты вне диапазона. Повторите ввод.");
+                }
+            }
+        }
+
+        // Что понасоздавали теперь ставим в дефолтный map
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                map.getCurrentMapGrid(Player.MapType.OGRE_LANDS)[x][y].setCelltype(editorMap[x][y].getCelltype());
+            }
+        }
+
+        System.out.println("\nКарта успешно создана!");
+        player.setCurrentMapType(Player.MapType.OGRE_LANDS);
+        player.setPosition(0, 0); // Начальная позиция
+        map.displayCurrentMap(player);
+    }
+
+    private static void drawEditorMap(Cell[][] map) {
+        int size = map.length;
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                System.out.print(" " + map[x][y].getCelltype() + " ");
+            }
+            System.out.println();
+        }
+    }
+
     private static void checkEvents(Player player, Diologies dialogs, Map map, Scanner scanner, Quests quests, BossBattle battle) {
+        Cell[][] currentGrid = map.getCurrentMapGrid(player.getCurrentMapType());
+        int x = player.getX();
+        int y = player.getY();
+
+        // Защита от выхода за границы
+        if (x < 0 || y < 0 || x >= currentGrid.length || y >= currentGrid[0].length) {
+            return;
+        }
+
+        String cellType = currentGrid[x][y].getCelltype();
+
         switch (player.getCurrentMapType()) {
             case OGRE_LANDS:
-                if (player.getX() == 3 && player.getY() == 2) {
+                if (cellType.equals("\uD83E\uDDCC")) { // Тралл 🧙‍♂️
                     handleThrallDialog(dialogs, map, scanner, player);
-                } else if (player.getX() == 1 && player.getY() == 4) {
+                } else if (cellType.equals("⚒\uFE0F")) { // Кузнец ⚒️
                     handleSmithDialog(dialogs, map, scanner, player);
-                }
-                else if (player.getX() == 6 && player.getY() == 3) {
+                } else if (cellType.equals("🛒")) { // Магазин 🛒
                     handleShop(map, player, scanner);
                 }
                 break;
+
             case RUINS:
-                if (player.getX() == 2 && player.getY() == 2) {
+                if (cellType.equals("\uD83D\uDD2E")) { // Загадка 💡
                     handleFirstQuest(quests, map, scanner, player);
                 }
                 break;
+
             case FROZEN_MAP:
-                if (player.getX() == 4 && player.getY() == 4) {
+                if (cellType.equals("\uD83E\uDDB9")) { // Босс 🧟‍♂️
                     battle.startBattle(player);
                     map.displayCurrentMap(player);
-                } else if (player.getX() == 4 && player.getY() == 3) {
-                    // Запускаем бой с приспешниками лича
+                } else if (cellType.equals("\uD83D\uDC3E")) { // Приспешники 👹
                     System.out.println("Приспешники Лича преграждают путь! Битва начинается...");
-
                     List<Enemy> minions = List.of(
                             new Enemy("Приспешник 1", 40, 10),
                             new Enemy("Приспешник 2", 40, 10),
                             new Enemy("Приспешник 3", 40, 10)
                     );
-
                     new BattleMap(map, player, minions, "\uD83D\uDC80").runBattle();
-
                     int rewardMinions = 30;
                     player.addCoins(rewardMinions);
                     System.out.println("Вы победили приспешников и получили " + rewardMinions + " монет! Всего монет: " + player.getCoins());
-
-                    // После победы — возвращаем на карту
                     player.setCurrentMapType(Player.MapType.FROZEN_MAP);
-                    map.setPlayer(player);
+                    player.setPosition(4,4);
                     map.displayCurrentMap(player);
                 }
                 break;
@@ -126,7 +263,6 @@ public class Main {
         while (dialogActive) {
             String currentDialog = dialogs.getThrallDialog();
             System.out.println(currentDialog);
-
             String input = scanner.nextLine().toLowerCase();
             if (input.equals("e")) {
                 dialogActive = false;
@@ -148,7 +284,6 @@ public class Main {
         while (dialogActive) {
             String currentDialog = dialogs.getSmithDialog(player);
             System.out.println(currentDialog);
-
             String input = scanner.nextLine().toLowerCase();
             if (input.equals("e")) {
                 dialogActive = false;
@@ -172,26 +307,19 @@ public class Main {
             boolean completed = quests.startFirstQuest(player, map);
             if (!completed) {
                 System.out.println("Духи напали! Переходим в бой...");
-
                 List<Enemy> spirits = List.of(
                         new Enemy("Дух 1", 30, 5),
                         new Enemy("Дух 2", 30, 5),
                         new Enemy("Дух 3", 30, 5)
                 );
-
                 new BattleMap(map, player, spirits, "👻").runBattle();
-
-                // Награда за победу над духами
                 int rewardSpirits = 20;
                 player.addCoins(rewardSpirits);
                 System.out.println("Вы победили духов и получили " + rewardSpirits + " монет! Всего монет: " + player.getCoins());
-
-                // возвращаем игрока
                 player.setCurrentMapType(Player.MapType.OGRE_LANDS);
                 map.setPlayer(player);
                 map.displayCurrentMap(player);
             } else {
-                // Награда за успех в разгадках
                 int rewardRiddles = 50;
                 player.addCoins(rewardRiddles);
                 System.out.println("Вы успешно решили все загадки и получили " + rewardRiddles + " монет! Всего монет: " + player.getCoins());
@@ -199,23 +327,27 @@ public class Main {
         }
     }
 
-
     private static void handleMapTransition(Scanner scanner, Map map, Player player) {
+        Cell[][] currentCell = map.getCurrentMapGrid(player.getCurrentMapType());
+        String cellType = currentCell[player.getX()][player.getY()].getCelltype();
+
         switch (player.getCurrentMapType()) {
             case OGRE_LANDS:
-                if (player.getX() == 2 && player.getY() == 7) {
+                if (cellType.equals("\uD80C\uDE78")) {
                     transitionToMap(scanner, map, player, Player.MapType.RUINS, 0, 0);
-                } else if (player.getX() == 0 && player.getY() == 5) {
+                } else if (cellType.equals("\uD83C\uDF0C")) {
                     transitionToMap(scanner, map, player, Player.MapType.FROZEN_MAP, 0, 0);
                 }
                 break;
+
             case RUINS:
-                if (player.getX() == 4 && player.getY() == 4) {
+                if (cellType.equals("\uD80C\uDE78")) {
                     transitionToMap(scanner, map, player, Player.MapType.OGRE_LANDS, 2, 7);
                 }
                 break;
+
             case FROZEN_MAP:
-                if (player.getX() == 7 && player.getY() == 7) {
+                if (cellType.equals("\uD83C\uDF0C")) {
                     transitionToMap(scanner, map, player, Player.MapType.OGRE_LANDS, 0, 5);
                 }
                 break;
@@ -232,6 +364,7 @@ public class Main {
             System.out.println("0) Уйти");
             System.out.print("Ваш выбор: ");
             String choice = scanner.nextLine().trim();
+
             switch (choice) {
                 case "1":
                     if (player.getCoins() >= 25) {
@@ -242,6 +375,7 @@ public class Main {
                         System.out.println("Недостаточно монет!");
                     }
                     break;
+
                 case "2":
                     if (player.getCoins() >= 50) {
                         player.addCoins(-50);
@@ -251,22 +385,22 @@ public class Main {
                         System.out.println("Недостаточно монет!");
                     }
                     break;
+
                 case "0":
                     inShop = false;
                     map.displayCurrentMap(player);
                     break;
+
                 default:
                     System.out.println("Неверный выбор!");
             }
         }
     }
 
-
-
     private static void transitionToMap(Scanner scanner, Map map, Player player, Player.MapType targetMap, int startX, int startY) {
         System.out.println("Перейти? (1 - да, 2 - нет)");
         String choice = scanner.nextLine();
-        if (choice.equals("1")) {
+        if ("1".equals(choice)) {
             player.setCurrentMapType(targetMap);
             player.setPosition(startX, startY);
             map.displayCurrentMap(player);

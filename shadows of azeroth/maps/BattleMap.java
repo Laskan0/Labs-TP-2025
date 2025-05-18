@@ -6,7 +6,7 @@ import entities.Enemy;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
-
+    
 public class BattleMap {
     private final Map map;
     private final Player player;
@@ -45,6 +45,7 @@ public class BattleMap {
             boolean anyAlive = enemies.stream().anyMatch(e -> e.getHealth() > 0);
             if (!anyAlive) {
                 System.out.println("Все враги повержены — победа!");
+                map.resetFightMap(); // Очищаем боевую карту
                 break;
             }
 
