@@ -9,8 +9,10 @@ import entities.Enemy;
 import maps.BattleMap;
 import save.SaveManager;
 import maps.Cell;
+import java.util.logging.Logger;
 
 public class Main {
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
     public static void main(String[] args) {
         Scanner inputScanner = new Scanner(System.in);
         System.out.print("Введите ваше имя: ");
@@ -23,6 +25,7 @@ public class Main {
         Quests quests = new Quests(inputScanner);
         BossBattle bossBattle = new BossBattle();
         boolean gameOver = false;
+
 
         // Показ рекордов при запуске
         SaveManager.showTopRecords();
@@ -309,10 +312,12 @@ public class Main {
                 }
                 break;
 
+
         }
 
         handleMapTransition(scanner, map, player);
     }
+
 
     // Диалог с траллом
     private static void handleThrallDialog(Diologies dialogs, Map map, Scanner scanner, Player player) {
@@ -366,8 +371,8 @@ public class Main {
         while (inShop) {
             map.displayCurrentMap(player);
             System.out.println("Торговец зельями предлагает:");
-            System.out.println("1) Зелье сваги (+50 HP) — 25 монет");
-            System.out.println("2) Зелье хайпа (+25 урона) — 50 монет");
+            System.out.println("1) Зелье здоровья (+50 HP) — 25 монет");
+            System.out.println("2) Зелье урона (+25 DMG) — 50 монет");
             System.out.println("0) Уйти");
             System.out.print("Ваш выбор: ");
             String choice = scanner.nextLine().trim();
@@ -375,22 +380,38 @@ public class Main {
             switch (choice) {
                 case "1":
                     if (player.getCoins() >= 25) {
+                        int before = player.getCoins();
                         player.addCoins(-25);
                         player.setHealth(player.getHealth() + 50);
-                        System.out.println("Вы купили зелье сваги! Монет осталось: " + player.getCoins());
+                        System.out.println("Вы купили зелье здоровья! Монет осталось: " + player.getCoins());
+
+                        // Логируем покупку
+                        SaveManager.logPurchase(player.getUsername(), "здоровье", "успешно", before, player.getCoins());
                     } else {
                         System.out.println("Недостаточно монет!");
+
+                        // Логируем попытку
+                        SaveManager.logPurchase(player.getUsername(), "здоровье", "недостаточно монет", player.getCoins(), player.getCoins());
                     }
+                    map.displayCurrentMap(player);
                     break;
 
                 case "2":
                     if (player.getCoins() >= 50) {
+                        int before = player.getCoins();
                         player.addCoins(-50);
                         player.setDmg(player.getDmg() + 25);
-                        System.out.println("Вы купили зелье хайпа! Монет осталось: " + player.getCoins());
+                        System.out.println("Вы купили зелье урона! Монет осталось: " + player.getCoins());
+
+                        // Логируем покупку
+                        SaveManager.logPurchase(player.getUsername(), "хайп", "успешно", before, player.getCoins());
                     } else {
                         System.out.println("Недостаточно монет!");
+
+                        // Логируем попытку
+                        SaveManager.logPurchase(player.getUsername(), "хайп", "недостаточно монет", player.getCoins(), player.getCoins());
                     }
+                    map.displayCurrentMap(player);
                     break;
 
                 case "0":
@@ -400,6 +421,7 @@ public class Main {
 
                 default:
                     System.out.println("Неверный выбор!");
+                    SaveManager.logPurchase(player.getUsername(), "неизвестно", "неверный выбор", player.getCoins(), player.getCoins());
             }
         }
     }

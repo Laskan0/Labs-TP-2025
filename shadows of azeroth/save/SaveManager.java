@@ -98,7 +98,7 @@ public class SaveManager {
             List<Record> records = gson.fromJson(json, new TypeToken<List<Record>>(){}.getType());
             if (records == null) records = new ArrayList<>();
 
-            // Сортируем по убыванию
+
             records.sort((a, b) -> Integer.compare(b.score, a.score));
 
             System.out.println("\nТОП-5 игроков:");
@@ -110,26 +110,28 @@ public class SaveManager {
         }
     }
 
-    // 5) Обновление рекордов
+
     public static void updateRecords(Player player) {
         File file = new File("records.json");
-        List<Record> records = new ArrayList<>();
+        List<Record> records = new ArrayList<>(); // Всегда инициализируем список
 
         try {
             if (file.exists()) {
                 String json = new String(Files.readAllBytes(file.toPath()));
-                records = gson.fromJson(json, new TypeToken<List<Record>>(){}.getType());
+                records = gson.fromJson(json, new TypeToken<List<Record>>() {}.getType());
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            System.out.println("Ошибка чтения файла рекордов.");
+        }
 
         // Добавляем новый рекорд
+
         Record newRecord = new Record();
         newRecord.username = player.getUsername();
-        newRecord.score = player.getScore(); // Подсчёт очков
+        newRecord.score = player.getScore();
         newRecord.mapType = player.getCurrentMapType().name();
         newRecord.date = new Date().toString();
-        records.add(newRecord);
-
+        records.add(newRecord); // Теперь records != null
         // Сортируем и оставляем топ-10
         records.sort((a, b) -> Integer.compare(b.score, a.score));
         if (records.size() > 10) records = records.subList(0, 10);
@@ -141,6 +143,8 @@ public class SaveManager {
             System.out.println("Ошибка обновления рекордов.");
         }
     }
+
+
 
     // DTO: Player
     public static class PlayerData {
@@ -225,13 +229,20 @@ public class SaveManager {
         public int smithStage;
 
         public DialogsData(Diologies dialogs) {
-            this.thrallStage = dialogs.getThrallStage();
-            this.smithStage = dialogs.getSmithStage();
+            if (dialogs != null) { // Проверка на null
+                this.thrallStage = dialogs.getThrallStage();
+                this.smithStage = dialogs.getSmithStage();
+            } else {
+                this.thrallStage = 0;
+                this.smithStage = 0;
+            }
         }
 
         public void applyTo(Diologies dialogs) {
-            dialogs.setThrallStage(thrallStage);
-            dialogs.setSmithStage(smithStage);
+            if (dialogs != null) {
+                dialogs.setThrallStage(thrallStage);
+                dialogs.setSmithStage(smithStage);
+            }
         }
     }
 
@@ -293,6 +304,25 @@ public class SaveManager {
 
         public Record() {
             this.date = new Date().toString();
+        }
+    }
+
+    public static void logPurchase(String username, String potionType, String status, int coinsBefore, int coinsAfter) {
+        String timestamp = new Date().toString();
+        String logEntry = String.format("Время: %s | Игрок: %s | Зелье: %s | Статус: %s | Монеты: %d -> %d%n",
+                timestamp, username, potionType, status, coinsBefore, coinsAfter);
+
+        // Убедимся, что папка saves существует
+        Path logsDir = Paths.get("saves");
+        try {
+            Files.createDirectories(logsDir);
+        } catch (IOException ignored) {}
+
+        // Записываем в файл
+        try (FileWriter writer = new FileWriter("saves/purchase_log.txt", true)) { // true — дозапись
+            writer.write(logEntry);
+        } catch (IOException e) {
+            System.out.println("Не удалось записать лог покупки.");
         }
     }
 }

@@ -4,6 +4,10 @@ import maps.Map;
 import maps.Cell;
 
 public class Player {
+
+
+
+
     public enum MapType {
         OGRE_LANDS,
         RUINS,
@@ -23,6 +27,24 @@ public class Player {
     private int coins = 0;
     private String username = ""; // Имя игрока
     private int score = 0; // Общий счёт
+    public void setCoins(int i) {
+        this.coins = i;
+    }
+
+    public int getX() { return x; }
+    public int getY() { return y; }
+    public void setPosition(int x, int y) { this.x = x; this.y = y; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public int getHealth() { return health; }
+    public int getDmg() { return dmg; }
+    public int getHealingPotion() { return healingPotion; }
+    public int getBoostDmgPotion() { return boostDmgPotion; }
+    public boolean isHasArtifact() { return hasArtifact; }
+    public void setHasArtifact(boolean hasArtifact) { this.hasArtifact = hasArtifact; }
+    public int getCoins() { return coins; }
+    public void addCoins(int amount) { this.coins += amount; }
+
 
     public Player(int startX, int startY) {
         this.x = startX;
@@ -71,9 +93,7 @@ public class Player {
     }
 
     // Добавить монеты
-    public void addCoins(int amount) {
-        coins += amount;
-    }
+
 
     // Получить счёт
     public int getScore() {
@@ -91,28 +111,13 @@ public class Player {
     }
 
     // Получить имя
-    public String getUsername() {
-        return username;
-    }
+
 
     // Установить имя
-    public void setUsername(String username) {
-        this.username = username != null ? username : "";
-    }
+
 
     // Геттеры и сеттеры
-    public int getX() {
-        return x;
-    }
 
-    public int getY() {
-        return y;
-    }
-
-    public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
 
     public MapType getCurrentMapType() {
         return currentMap;
@@ -122,41 +127,27 @@ public class Player {
         this.currentMap = type;
     }
 
-    public boolean isHasArtifact() {
-        return hasArtifact;
-    }
 
-    public void setHasArtifact(boolean hasArtifact) {
-        this.hasArtifact = hasArtifact;
-    }
 
-    public int getHealth() {
-        return health;
-    }
+
 
     public void setHealth(int health) {
         this.health = health;
     }
 
-    public int getDmg() {
-        return dmg;
-    }
+
 
     public void setDmg(int dmg) {
         this.dmg = dmg;
     }
 
-    public int getHealingPotion() {
-        return healingPotion;
-    }
+
 
     public void setHealingPotion(int healingPotion) {
         this.healingPotion = healingPotion;
     }
 
-    public int getBoostDmgPotion() {
-        return boostDmgPotion;
-    }
+
 
     public void setBoostDmgPotion(int boostDmgPotion) {
         this.boostDmgPotion = boostDmgPotion;
@@ -170,7 +161,5 @@ public class Player {
         this.movesLeft = 3;
     }
 
-    public int getCoins() {
-        return coins;
-    }
+
 }

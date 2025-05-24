@@ -5,7 +5,6 @@ import entities.Enemy;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
-
 import java.util.ArrayList;
 
 public class BattleMap {
@@ -17,9 +16,9 @@ public class BattleMap {
     private final String enemySymbol;
     private final Random rnd = new Random();
 
-    // Новый флаг для эффекта зелья
+    // Флаг и счётчик ходов эффекта зелья
     private boolean potionEffectActive = false;
-    private int potionEffectTurns = 0; // Счётчик ходов эффекта
+    private int potionEffectTurns = 0;
 
     public BattleMap(Map map, Player player, List<Enemy> enemies, String enemySymbol) {
         this.map = map;
@@ -90,11 +89,43 @@ public class BattleMap {
             }
             // Направленная атака
             else if ("1".equals(cmd)) {
-                // ... (остальной код)
+                System.out.print("Выберите направление (w/a/s/d): ");
+                String dir = sc.nextLine().trim();
+                int adx = dir.equals("w") ? -1 : dir.equals("s") ? 1 : 0;
+                int ady = dir.equals("a") ? -1 : dir.equals("d") ? 1 : 0;
+
+                int tx = player.getX() + adx;
+                int ty = player.getY() + ady;
+
+                // Атака по направлению
+                for (int i = 0; i < enemies.size(); i++) {
+                    Enemy e = enemies.get(i);
+                    if (e.getHealth() > 0 && enemyPos[i][0] == tx && enemyPos[i][1] == ty) {
+                        e.takeDamage(player.getDmg());
+                        System.out.println("Направленная атака поразила " + e.getName() + ", осталось HP: " + e.getHealth());
+                    }
+                }
             }
             // Атака по области
             else if ("2".equals(cmd)) {
-                // ... (остальной код)
+                int[][] offsets = {
+                        {-1, -1}, {-1, 0}, {-1, 1},
+                        { 0, -1},          { 0, 1},
+                        { 1, -1}, {1, 0}, {1, 1}
+                };
+
+                for (int[] off : offsets) {
+                    int tx = player.getX() + off[0];
+                    int ty = player.getY() + off[1];
+
+                    for (int i = 0; i < enemies.size(); i++) {
+                        Enemy e = enemies.get(i);
+                        if (e.getHealth() > 0 && enemyPos[i][0] == tx && enemyPos[i][1] == ty) {
+                            e.takeDamage(player.getDmg());
+                            System.out.println("Областная атака поразила " + e.getName());
+                        }
+                    }
+                }
             }
             // Выпить зелье
             else if ("3".equals(cmd)) {
@@ -105,22 +136,22 @@ public class BattleMap {
                     player.setHealingPotion(player.getHealingPotion() - 1);
                     System.out.println("Вы выпили зелье здоровья. HP = " + player.getHealth());
 
-                    // Активация эффекта с 90% шансом
+                    // Активация эффекта зелья
                     if (rnd.nextDouble() < 0.9) {
-                        potionEffectActive = true;
+                        activatePotionEffect(true);
                         potionEffectTurns = 5;
-                        System.out.println("Активировано специальное зелье! Боевая карта изменит свой вид каждые 5 ходов.");
+                        System.out.println("Активировано специальное зелье! Боевая карта изменится.");
                     }
                 } else if ("2".equals(potion) && player.getBoostDmgPotion() > 0) {
                     player.setDmg(player.getDmg() + 25);
                     player.setBoostDmgPotion(player.getBoostDmgPotion() - 1);
                     System.out.println("Вы выпили зелье урона. DMG = " + player.getDmg());
 
-                    // Активация эффекта с 90% шансом
+                    // Активация эффекта зелья
                     if (rnd.nextDouble() < 0.9) {
-                        potionEffectActive = true;
+                        activatePotionEffect(true);
                         potionEffectTurns = 5;
-                        System.out.println("Активировано специальное зелье! Боевая карта изменит свой вид каждые 5 ходов.");
+                        System.out.println("Активировано специальное зелье! Боевая карта изменится.");
                     }
                 } else {
                     System.out.println("У вас нет таких зелий или неверный выбор.");
@@ -176,7 +207,7 @@ public class BattleMap {
                 }
             }
 
-            // Обновляем счётчик ходов эффекта зелья
+            // Обновление счётчика ходов эффекта зелья
             if (potionEffectActive) {
                 potionEffectTurns--;
                 if (potionEffectTurns == 0) {
@@ -200,15 +231,13 @@ public class BattleMap {
         Cell[][] fightMap = map.getFightMap();
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
-                // Заменяем символы на случайные эмодзи
                 fightMap[x][y].setCelltype(getRandomEmoji());
             }
         }
     }
 
     // Получение случайного эмодзи из всех карт
-    private String getRandomEmoji() { //ИЗУЧИТь
-        Map map = new Map();
+    private String getRandomEmoji() {
         List<String> emojis = new ArrayList<>();
         emojis.addAll(map.getOgreMapData().stream().flatMap(List::stream).toList());
         emojis.addAll(map.getRuinMapData().stream().flatMap(List::stream).toList());
@@ -220,10 +249,39 @@ public class BattleMap {
     private boolean isCellFree(int x, int y, int skipIndex) {
         for (int j = 0; j < enemies.size(); j++) {
             if (j == skipIndex) continue;
-            if (enemies.get(j).getHealth() > 0 && enemyPos[j][0] == x && enemyPos[j][1] == y) {
+            if (enemyPos[j][0] == x && enemyPos[j][1] == y) {
                 return false;
             }
         }
         return true;
+    }
+
+    public boolean isPotionEffectActive() {
+        return potionEffectActive;
+    }
+
+    public void setPotionEffect(boolean active) {
+        this.potionEffectActive = active;
+    }
+
+    public int getPotionEffectTurns() {
+        return potionEffectTurns;
+    }
+
+    public void setPotionEffectTurns(int turns) {
+        this.potionEffectTurns = turns;
+    }
+
+    public void decreasePotionEffectTurns() {
+        if (potionEffectTurns > 0) {
+            potionEffectTurns--;
+            if (potionEffectTurns == 0) {
+                potionEffectActive = false;
+            }
+        }
+    }
+
+    public void activatePotionEffect(boolean b) {
+        this.potionEffectActive = b;
     }
 }

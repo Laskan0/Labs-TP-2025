@@ -169,4 +169,8 @@ public class BossBattle {
     public void setExhaustionUsed(boolean used) {
         this.hasUsedExhaustion = used;
     }
+
+    public void setBattleActive(boolean active){
+        this.isBattleActive = active;
+    }
 }

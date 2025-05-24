@@ -28,10 +28,12 @@ public class Quests {
     }
 
     public void applyTo(Quests quests) {
-        // Восстанови состояние квестов
+        if (quests != null) {
+            quests.setQuestState(questState);
+        }
     }
 
-        // ... (остальной код)
+
 
         public boolean startFirstQuest(Player player, Map map) {
             System.out.println(introduction);
@@ -107,4 +109,14 @@ public class Quests {
     public void setQuestState(int questState) {
         this.questState = questState;
     }
+
+    public void QuestsData(Quests quests) {
+        if (quests != null) { // Проверка на null
+            this.questState = quests.getQuestState();
+        } else {
+            this.questState = 0;
+        }
+    }
+
+    
 }

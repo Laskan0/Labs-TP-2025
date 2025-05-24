@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Map {
-    private final Cell[][] ogreMap;
+    public final Cell[][] ogreMap;
     private final Cell[][] clearOgreMap;
     private final Cell[][] ruinMap;
     private final Cell[][] clearRuinMap;
@@ -276,7 +276,7 @@ public class Map {
         for (int x = 0; x < FIGHT_MAP_SIZE; x++) {
             for (int y = 0; y < FIGHT_MAP_SIZE; y++) {
                 if (x == 0 || y == 0 || x == FIGHT_MAP_SIZE - 1 || y == FIGHT_MAP_SIZE - 1) {
-                    fightMap[x][y].setCelltype("\uD83D\uDD2E"); // Загадки по краям
+                    fightMap[x][y].setCelltype("-");
                 } else {
                     fightMap[x][y].setCelltype("-");
                 }
