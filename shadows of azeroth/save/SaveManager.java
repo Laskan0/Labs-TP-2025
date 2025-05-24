@@ -1,32 +1,59 @@
 package save;
+
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import entities.Player;
+import maps.Map;
+import other_things.Diologies;
+import other_things.Quests;
+import other_things.BossBattle;
+import maps.Cell;
+
 import java.io.*;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.List;
-import entities.*;
-import other_things.*;
-import maps.*;
-
+import java.util.*;
 
 public class SaveManager {
-    private static final Gson gson = new Gson();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    // Сохранение игры
-    public static void saveGame(Player player, Map map, Diologies dialogs, Quests quests, BossBattle boss) {
-        GameSaveData data = new GameSaveData(player, map, dialogs, quests, boss);
-        try (FileWriter writer = new FileWriter("savegame.json")) {
-            writer.write(gson.toJson(data));
-            System.out.println("Игра сохранена!");
+    // 1) Сохранить игру
+    public static void saveGame(Player player, Map map, Diologies dialogs, Quests quests, BossBattle boss, String slot) {
+        if (player.getUsername() == null || player.getUsername().isEmpty()) {
+            System.out.println("Введите имя игрока перед сохранением.");
+            return;
+        }
+
+        // Создаем папку saves, если её нет
+        Path savesDir = Paths.get("saves");
+        try {
+            Files.createDirectories(savesDir);
         } catch (IOException e) {
-            System.out.println("Ошибка сохранения.");
+            System.out.println("Ошибка создания папки 'saves': " + e.getMessage());
+            return;
+        }
+
+        GameSaveData data = new GameSaveData(player, map, dialogs, quests, boss);
+        String filename = "saves/" + player.getUsername() + "_slot" + slot + ".json";
+
+        try (FileWriter writer = new FileWriter(filename)) {
+            writer.write(gson.toJson(data));
+            System.out.println("Игра сохранена в " + filename);
+        } catch (IOException e) {
+            System.out.println("Ошибка сохранения: " + e.getMessage());
         }
     }
 
-    // Загрузка игры
-    public static boolean loadGame(Player player, Map map, Diologies dialogs, Quests quests, BossBattle boss) {
+    // 2) Загрузить игру
+    public static boolean loadGame(Player player, Map map, Diologies dialogs, Quests quests, BossBattle boss, String slot) {
+        if (player.getUsername() == null || player.getUsername().isEmpty()) {
+            System.out.println("Введите имя игрока для загрузки сохранения.");
+            return false;
+        }
+
+        String filename = "saves/" + player.getUsername() + "_slot" + slot + ".json";
         try {
-            String json = new String(Files.readAllBytes(Paths.get("savegame.json")));
+            String json = new String(Files.readAllBytes(Paths.get(filename)));
             GameSaveData data = gson.fromJson(json, GameSaveData.class);
 
             data.player.applyTo(player);
@@ -35,11 +62,83 @@ public class SaveManager {
             data.quests.applyTo(quests);
             data.boss.applyTo(boss);
 
-            System.out.println("Игра загружена!");
+            System.out.println("Игра загружена из " + filename);
             return true;
         } catch (Exception e) {
-            System.out.println("Сохранение отсутствует или повреждено.");
+            System.out.println("Ошибка загрузки: сохранение отсутствует или повреждено");
             return false;
+        }
+    }
+
+    // 3) Автосохранение после ключевых событий
+    public static void autoSaveGame(Player player, Map map, Diologies dialogs, Quests quests, BossBattle boss) {
+        if (player.getUsername() == null || player.getUsername().isEmpty()) return;
+
+        GameSaveData data = new GameSaveData(player, map, dialogs, quests, boss);
+        String filename = "saves/" + player.getUsername() + "_autosave.json";
+
+        try (FileWriter writer = new FileWriter(filename)) {
+            writer.write(gson.toJson(data));
+            System.out.println("Автосохранение выполнено: " + filename);
+        } catch (IOException e) {
+            System.out.println("Ошибка автосохранения.");
+        }
+    }
+
+    // 4) Просмотр рекордов
+    public static void showTopRecords() {
+        File file = new File("records.json");
+        if (!file.exists()) {
+            System.out.println("Нет сохранённых рекордов.");
+            return;
+        }
+
+        try {
+            String json = new String(Files.readAllBytes(file.toPath()));
+            List<Record> records = gson.fromJson(json, new TypeToken<List<Record>>(){}.getType());
+            if (records == null) records = new ArrayList<>();
+
+            // Сортируем по убыванию
+            records.sort((a, b) -> Integer.compare(b.score, a.score));
+
+            System.out.println("\nТОП-5 игроков:");
+            for (int i = 0; i < Math.min(5, records.size()); i++) {
+                System.out.printf("%d. %s (%s) — %d очков%n", i + 1, records.get(i).username, records.get(i).mapType, records.get(i).score);
+            }
+        } catch (Exception e) {
+            System.out.println("Файл рекордов повреждён или пуст.");
+        }
+    }
+
+    // 5) Обновление рекордов
+    public static void updateRecords(Player player) {
+        File file = new File("records.json");
+        List<Record> records = new ArrayList<>();
+
+        try {
+            if (file.exists()) {
+                String json = new String(Files.readAllBytes(file.toPath()));
+                records = gson.fromJson(json, new TypeToken<List<Record>>(){}.getType());
+            }
+        } catch (Exception ignored) {}
+
+        // Добавляем новый рекорд
+        Record newRecord = new Record();
+        newRecord.username = player.getUsername();
+        newRecord.score = player.getScore(); // Подсчёт очков
+        newRecord.mapType = player.getCurrentMapType().name();
+        newRecord.date = new Date().toString();
+        records.add(newRecord);
+
+        // Сортируем и оставляем топ-10
+        records.sort((a, b) -> Integer.compare(b.score, a.score));
+        if (records.size() > 10) records = records.subList(0, 10);
+
+        // Сохраняем обратно в файл
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(gson.toJson(records));
+        } catch (IOException e) {
+            System.out.println("Ошибка обновления рекордов.");
         }
     }
 
@@ -54,6 +153,8 @@ public class SaveManager {
         public int boostDmgPotion;
         public int coins;
         public boolean hasArtifact;
+        public String username;
+        public int score;
 
         public PlayerData(Player player) {
             this.x = player.getX();
@@ -65,6 +166,8 @@ public class SaveManager {
             this.boostDmgPotion = player.getBoostDmgPotion();
             this.coins = player.getCoins();
             this.hasArtifact = player.isHasArtifact();
+            this.username = player.getUsername();
+            this.score = player.getScore();
         }
 
         public void applyTo(Player player) {
@@ -74,7 +177,10 @@ public class SaveManager {
             player.setDmg(dmg);
             player.setHealingPotion(healingPotion);
             player.setBoostDmgPotion(boostDmgPotion);
-            player.addCoins(0); // обновление монет
+            player.addCoins(coins - player.getCoins());
+            player.setHasArtifact(hasArtifact);
+            player.setUsername(username);
+            player.setScore(score);
         }
     }
 
@@ -93,10 +199,10 @@ public class SaveManager {
         }
 
         public void applyTo(Map map) {
-            setMap(map, ogreMap, Player.MapType.OGRE_LANDS);
-            setMap(map, ruinMap, Player.MapType.RUINS);
-            setMap(map, frozenMap, Player.MapType.FROZEN_MAP);
-            setMap(map, fightMap, Player.MapType.FIGHT_MAP);
+            map.restoreMapFromList(Player.MapType.OGRE_LANDS, ogreMap);
+            map.restoreMapFromList(Player.MapType.RUINS, ruinMap);
+            map.restoreMapFromList(Player.MapType.FROZEN_MAP, frozenMap);
+            map.restoreMapFromList(Player.MapType.FIGHT_MAP, fightMap);
         }
 
         private List<List<String>> convertMap(Map map, Player.MapType type) {
@@ -110,16 +216,6 @@ public class SaveManager {
                 grid.add(line);
             }
             return grid;
-        }
-
-        private void setMap(Map map, List<List<String>> data, Player.MapType type) {
-            Cell[][] target = map.getCurrentMapGrid(type);
-            for (int x = 0; x < data.size(); x++) {
-                List<String> row = data.get(x);
-                for (int y = 0; y < row.size(); y++) {
-                    target[x][y].setCelltype(row.get(y));
-                }
-            }
         }
     }
 
@@ -141,14 +237,14 @@ public class SaveManager {
 
     // DTO: Квесты
     public static class QuestsData {
-        public boolean riddleCompleted;
+        public int questState;
 
         public QuestsData(Quests quests) {
-            this.riddleCompleted = true; // или логика проверки
+            this.questState = quests.getQuestState();
         }
 
         public void applyTo(Quests quests) {
-            // Здесь можно восстановить прогресс квестов
+            quests.setQuestState(questState);
         }
     }
 
@@ -160,16 +256,18 @@ public class SaveManager {
 
         public BossData(BossBattle boss) {
             this.bossHealth = boss.isWonLich() == 0 ? 0 : boss.isWonLich() == 1 ? 150 : 300;
-            this.hasUsedStun = false;
-            this.hasUsedExhaustion = false;
+            this.hasUsedStun = boss.isStunUsed();
+            this.hasUsedExhaustion = boss.isExhaustionUsed();
         }
 
         public void applyTo(BossBattle boss) {
-            // Здесь можно восстановить состояние босса
+            boss.setBossHealth(bossHealth);
+            boss.setStunUsed(hasUsedStun);
+            boss.setExhaustionUsed(hasUsedExhaustion);
         }
     }
 
-    // Объединяющий класс
+    // Объединяющий класс для сохранения
     public static class GameSaveData {
         public PlayerData player;
         public MapData map;
@@ -183,6 +281,18 @@ public class SaveManager {
             this.dialogs = new DialogsData(dialogs);
             this.quests = new QuestsData(quests);
             this.boss = new BossData(boss);
+        }
+    }
+
+    // Класс рекордов
+    public static class Record {
+        public String username;
+        public int score;
+        public String mapType;
+        public String date;
+
+        public Record() {
+            this.date = new Date().toString();
         }
     }
 }

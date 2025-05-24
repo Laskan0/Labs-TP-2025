@@ -16,6 +16,10 @@ public class BossBattle {
         this.scanner = new Scanner(System.in);
     }
 
+    public void applyTo(BossBattle boss) {
+        // Восстанови состояние босса
+    }
+
     public void startBattle(Player player) {
         System.out.println("Лич: 'Твои усилия бесполезны...'");
         while (isBattleActive) {
@@ -138,5 +142,31 @@ public class BossBattle {
         if (!isBattleActive && bossHealth <= 0) return 0; // Победа
         if (!isBattleActive && bossHealth > 0) return 1; // Поражение
         return 2; // Бой продолжается
+    }
+
+
+    // Геттеры для состояния босса
+    public boolean isStunUsed() {
+        return hasUsedStun;
+    }
+
+    public boolean isExhaustionUsed() {
+        return hasUsedExhaustion;
+    }
+
+    public int getBossHealth() {
+        return bossHealth;
+    }
+
+    public void setBossHealth(int bossHealth) {
+        this.bossHealth = bossHealth;
+    }
+
+    public void setStunUsed(boolean used) {
+        this.hasUsedStun = used;
+    }
+
+    public void setExhaustionUsed(boolean used) {
+        this.hasUsedExhaustion = used;
     }
 }

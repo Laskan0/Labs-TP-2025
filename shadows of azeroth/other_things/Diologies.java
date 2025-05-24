@@ -62,6 +62,13 @@ public class Diologies {
             "\"Ступай в руины. Найди артефакт. Или я сам отправлюсь за ним... и тогда твоё имя вычеркнут из летописей.\nНАЖМИТЕ 'Е' ДЛЯ ПРОДОЛЖЕНИЯ\"";
     private final String smithFinal = "Здесь больше нечего делать";
 
+
+
+    public void applyTo(Diologies dialogs) {
+        dialogs.setThrallStage(thrallStage);
+        dialogs.setSmithStage(smithStage);
+    }
+
     public int getThrallStage() {
         return thrallStage;
     }
@@ -108,6 +115,9 @@ public class Diologies {
     public void moveToNextThrallStage() {
 
         if (thrallStage < 2 && canProgressThrallDialog()) { // Ограничение: максимальная стадия = 2
+            thrallStage++;
+        }
+        else if (thrallStage == 0) {
             thrallStage++;
         }
 

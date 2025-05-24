@@ -21,6 +21,8 @@ public class Player {
     private int boostDmgPotion = 2;
     private int movesLeft = 3;
     private int coins = 0;
+    private String username = ""; // Имя игрока
+    private int score = 0; // Общий счёт
 
     public Player(int startX, int startY) {
         this.x = startX;
@@ -28,6 +30,7 @@ public class Player {
     }
 
     // Метод для перемещения игрока
+// В Player.java
     public boolean playerMove(int dx, int dy, Map map) {
         int newX = x + dx;
         int newY = y + dy;
@@ -35,53 +38,66 @@ public class Player {
         int maxX = map.getCurrentMapMaxX(currentMap);
         int maxY = map.getCurrentMapMaxY(currentMap);
 
-        // Проверяем границы
         if (newX >= 0 && newX < maxX && newY >= 0 && newY < maxY) {
-            Cell[][] currentGrid = map.getCurrentMapGrid(currentMap); // Получаем текущую карту
-            String cellType = currentGrid[newX][newY].getCelltype(); // Получаем тип ячейки
+            Cell[][] currentGrid = map.getCurrentMapGrid(currentMap);
+            String cellType = currentGrid[newX][newY].getCelltype();
 
-            // Проверяем тип новой ячейки
-            if (cellType.equals("\uD83C\uDFD5\uFE0F")) { // Палатка
-                System.out.println("Нельзя пройти через палатку!");
-                return false;
+            if (!cellType.equals("\uD83C\uDFD5\uFE0F")) { // Проверка на палатку
+                x = newX;
+                y = newY;
+                return true;
             }
-
-            if (cellType.equals("\uD83D\uDD25")) { // Огонь
-                health -= 10;
-                System.out.println("Глупец! Ты сгорел в адском пламени!");
-                System.out.println("Текущая свага: " + health);
-            }
-
-            // Все проверки пройдены — обновляем позицию
-            x = newX;
-            y = newY;
-            return true;
         }
-
-        // Если выход за границы — движение невозможно
         return false;
     }
 
-    // Метод для отображения состояния игрока
+    // Отображение состояния игрока
     public void player_condition() {
         System.out.println("ТЕКУЩАЯ СВАГА: " + health);
         System.out.println("ТЕКУЩИЙ УРОН: " + dmg);
-        System.out.println("Зельки сваги: " + healingPotion);
-        System.out.println("Зельки Хайпа: " + boostDmgPotion);
+        System.out.println("Зельки здоровья: " + healingPotion);
+        System.out.println("Зельки атаки: " + boostDmgPotion);
+        System.out.println("Монеты: " + coins);
+        System.out.println("Артефакт: " + (hasArtifact ? "есть" : "нет"));
     }
 
+    // Использование хода
     public boolean useMove() {
-        if(movesLeft > 0) {
+        if (movesLeft > 0) {
             movesLeft--;
             return true;
-
         }
         return false;
     }
 
-
+    // Добавить монеты
     public void addCoins(int amount) {
         coins += amount;
+    }
+
+    // Получить счёт
+    public int getScore() {
+        return calculateScore();
+    }
+
+    // Рассчёт счёта
+    public int calculateScore() {
+        return coins + (hasArtifact ? 100 : 0); // Пример подсчёта
+    }
+
+    // Установить счёт
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    // Получить имя
+    public String getUsername() {
+        return username;
+    }
+
+    // Установить имя
+    public void setUsername(String username) {
+        this.username = username != null ? username : "";
     }
 
     // Геттеры и сеттеры
@@ -150,13 +166,11 @@ public class Player {
         return movesLeft;
     }
 
-
     public void resetMoves() {
-        this.movesLeft =3;
+        this.movesLeft = 3;
     }
 
-    public int getCoins(){
+    public int getCoins() {
         return coins;
     }
-
 }

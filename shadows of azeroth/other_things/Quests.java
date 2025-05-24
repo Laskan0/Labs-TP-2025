@@ -27,36 +27,47 @@ public class Quests {
         this.scanner = scanner;
     }
 
-    public boolean startFirstQuest(Player player, Map map) {
-        System.out.println(introduction);
-
-        while (questState < 3) {
-            switch (questState) {
-                case 0:
-                    if (!solveRiddle(firstQuestRiddle, firstQuestAnswer)) {
-                        return false;
-                    }
-                    questState++;
-                    break;
-                case 1:
-                    if (!solveRiddle(secondQuestRiddle, secondQuestAnswer)) {
-                        return false;
-                    }
-                    questState++;
-                    break;
-                case 2:
-                    if (!solveRiddle(thirdQuestRiddle, thirdQuestAnswer)) {
-                        return false;
-                    }
-                    questState++;
-                    break;
-            }
-        }
-
-        System.out.println("Поздравляю! Вы разгадали все загадки и получили артефакт!");
-        player.setHasArtifact(true);
-        return true;
+    public void applyTo(Quests quests) {
+        // Восстанови состояние квестов
     }
+
+        // ... (остальной код)
+
+        public boolean startFirstQuest(Player player, Map map) {
+            System.out.println(introduction);
+
+            // 🔥 Сброс состояния квеста перед началом
+            if (questState >= 3) {
+                questState = 0; // Начинаем квест заново
+            }
+
+            while (questState < 3) {
+                switch (questState) {
+                    case 0:
+                        if (!solveRiddle(firstQuestRiddle, firstQuestAnswer)) {
+                            return false;
+                        }
+                        questState++;
+                        break;
+                    case 1:
+                        if (!solveRiddle(secondQuestRiddle, secondQuestAnswer)) {
+                            return false;
+                        }
+                        questState++;
+                        break;
+                    case 2:
+                        if (!solveRiddle(thirdQuestRiddle, thirdQuestAnswer)) {
+                            return false;
+                        }
+                        questState++;
+                        break;
+                }
+            }
+
+            System.out.println("Поздравляю! Вы разгадали все загадки и получили артефакт!");
+            player.setHasArtifact(true);
+            return true;
+        }
 
     private boolean solveRiddle(String riddle, String correctAnswer) {
         int attempts = 3;
@@ -80,5 +91,20 @@ public class Quests {
             }
         }
         return false;
+    }
+
+    public boolean isQuestCompleted() {
+        return questState == 3; // Квест завершён, если пройдены все 3 загадки
+    }
+    // Метод для принудительного завершения квеста
+
+
+    // Геттер и сеттер для questState
+    public int getQuestState() {
+        return questState;
+    }
+
+    public void setQuestState(int questState) {
+        this.questState = questState;
     }
 }
