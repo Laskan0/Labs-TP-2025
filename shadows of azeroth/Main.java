@@ -1,3 +1,5 @@
+import buildings.Alchemist;
+import buildings.WarriorTower;
 import maps.Map;
 import entities.Player;
 import other_things.Diologies;
@@ -9,6 +11,8 @@ import entities.Enemy;
 import maps.BattleMap;
 import save.SaveManager;
 import maps.Cell;
+import time.GameTime;
+import buildings.Totem;
 import java.util.logging.Logger;
 
 public class Main {
@@ -18,13 +22,17 @@ public class Main {
         System.out.print("Введите ваше имя: ");
         String username = inputScanner.nextLine();
 
-        Player player = new Player(0, 0);
+        Player player = new Player(0, 2);
         player.setUsername(username);
-
+        GameTime gameTime = new GameTime();
         Diologies dialogs = new Diologies();
         Quests quests = new Quests(inputScanner);
         BossBattle bossBattle = new BossBattle();
+        Totem totem = new Totem(gameTime);
+        Alchemist alchemist = new Alchemist(gameTime);
+        WarriorTower tower = new WarriorTower(gameTime);
         boolean gameOver = false;
+
 
 
         // Показ рекордов при запуске
@@ -69,6 +77,8 @@ public class Main {
         // Основной игровой цикл
         dialogs.displayProlog();
         map.displayCurrentMap(player);
+        // запуск игрового времени
+        gameTime.start();
 
         while (!gameOver) {
             System.out.println("\nУправляй: w/a/s/d (ход), 1 (атака), 2 (сплеш), p (состояние), save (сохранить), load (загрузить), records (рекорды)");
@@ -99,7 +109,7 @@ public class Main {
                     int dy = input.equals("a") ? -1 : input.equals("d") ? 1 : 0;
                     if (player.playerMove(dx, dy, map)) {
                         map.displayCurrentMap(player); // Добавлено: перерисовка карты
-                        checkEvents(player, dialogs, map, gameScanner, quests, bossBattle);
+                        checkEvents(player, dialogs, map, gameScanner, quests, bossBattle,totem,alchemist,tower);
                     } else {
                         System.out.println("Движение невозможно!");
                         map.displayCurrentMap(player); // Добавлено: перерисовка карты
@@ -244,7 +254,7 @@ public class Main {
     }
 
     // Проверка событий
-    private static void checkEvents(Player player, Diologies dialogs, Map map, Scanner scanner, Quests quests, BossBattle battle) {
+    private static void checkEvents(Player player, Diologies dialogs, Map map, Scanner scanner, Quests quests, BossBattle battle, Totem totem, Alchemist alchemist, WarriorTower tower) {
         Cell[][] currentGrid = map.getCurrentMapGrid(player.getCurrentMapType());
         int x = player.getX();
         int y = player.getY();
@@ -261,8 +271,19 @@ public class Main {
                     handleSmithDialog(dialogs, map, scanner, player);
                 } else if (cellType.equals("🛒")) { // Магазин
                     handleShop(map, player, scanner);
+                } else if(cellType.equals("\uD83D\uDDFF")) {
+                    totem.interact(player, map);
+                } else if(cellType.equals("\uD83E\uDDEA")) {
+                    alchemist.interact(player,map);
                 }
-                break;
+                 else if(cellType.equals("\uD83C\uDFEF")) {
+                tower.interact(player,map);
+                }
+
+
+
+
+        break;
 
             case RUINS:
                 if (cellType.equals("\uD83D\uDD2E")) { // Загадка
@@ -369,7 +390,7 @@ public class Main {
     private static void handleShop(Map map, Player player, Scanner scanner) {
         boolean inShop = true;
         while (inShop) {
-            map.displayCurrentMap(player);
+
             System.out.println("Торговец зельями предлагает:");
             System.out.println("1) Зелье здоровья (+50 HP) — 25 монет");
             System.out.println("2) Зелье урона (+25 DMG) — 50 монет");

@@ -24,7 +24,7 @@ public class Player {
     private int healingPotion = 3;
     private int boostDmgPotion = 2;
     private int movesLeft = 3;
-    private int coins = 0;
+    private int coins = 50;
     private String username = ""; // Имя игрока
     private int score = 0; // Общий счёт
     public void setCoins(int i) {

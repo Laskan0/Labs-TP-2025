@@ -111,6 +111,11 @@ public class Map {
         ogreMap[6][3].setCelltype("🛒");
         ogreMap[1][4].setCelltype("⚒\uFE0F");
 
+        //Здания
+        ogreMap[0][3].setCelltype("\uD83D\uDDFF");
+        ogreMap[5][5].setCelltype("\uD83E\uDDEA");
+        ogreMap[6][1].setCelltype("\uD83C\uDFEF");
+
         // Копируем данные в clearOgreMap
         for (int x = 0; x < OGRE_MAP_SIZE; x++) {
             for (int y = 0; y < OGRE_MAP_SIZE; y++) {
