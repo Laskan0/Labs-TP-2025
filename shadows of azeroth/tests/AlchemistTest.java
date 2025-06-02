@@ -20,9 +20,10 @@ class AlchemistTest extends BaseTest {
     void testAlchemist_GivesPotionsAfterDelay() throws InterruptedException {
         // Подготовка
         GameTime gameTime = createRealGameTime();
-        Alchemist alchemist = new Alchemist(gameTime);
+
         Player player = createTestPlayer();
         Map map = createTestMap();
+        Alchemist alchemist = new Alchemist(gameTime,player,map);
 
         // Имитируем ввод "1" (да)
         String input = "1\n";  // "\n" — имитация нажатия Enter

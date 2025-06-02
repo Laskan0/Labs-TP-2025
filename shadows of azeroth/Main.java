@@ -22,15 +22,13 @@ public class Main {
         System.out.print("Введите ваше имя: ");
         String username = inputScanner.nextLine();
 
-        Player player = new Player(0, 2);
+        Player player = new Player(6, 0);
         player.setUsername(username);
         GameTime gameTime = new GameTime();
         Diologies dialogs = new Diologies();
         Quests quests = new Quests(inputScanner);
         BossBattle bossBattle = new BossBattle();
-        Totem totem = new Totem(gameTime);
-        Alchemist alchemist = new Alchemist(gameTime);
-        WarriorTower tower = new WarriorTower(gameTime);
+
         boolean gameOver = false;
 
 
@@ -79,8 +77,12 @@ public class Main {
         map.displayCurrentMap(player);
         // запуск игрового времени
         gameTime.start();
+        Alchemist alchemist = new Alchemist(gameTime,player,map);
+        Totem totem = new Totem(gameTime,map,player);
 
+        WarriorTower tower = new WarriorTower(gameTime,map, player);
         while (!gameOver) {
+            System.out.println("Текущее время:" + gameTime.getCurrentTime());
             System.out.println("\nУправляй: w/a/s/d (ход), 1 (атака), 2 (сплеш), p (состояние), save (сохранить), load (загрузить), records (рекорды)");
             String input = gameScanner.nextLine().toLowerCase();
 
@@ -275,6 +277,7 @@ public class Main {
                     totem.interact(player, map);
                 } else if(cellType.equals("\uD83E\uDDEA")) {
                     alchemist.interact(player,map);
+
                 }
                  else if(cellType.equals("\uD83C\uDFEF")) {
                 tower.interact(player,map);
@@ -337,6 +340,7 @@ public class Main {
         }
 
         handleMapTransition(scanner, map, player);
+
     }
 
 

@@ -7,8 +7,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class GameTime {
-    private int hour = 9;     // Начинается с 9:00
-    private int minute = 0;
+    private int hour = 21;     // Начинается с 9:00
+    private int minute = 55;
     private boolean running = true;
 
     private final List<TimeChangeListener> listeners = new ArrayList<>();//список слушателей

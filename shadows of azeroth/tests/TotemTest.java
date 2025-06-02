@@ -19,10 +19,10 @@ class TotemTest extends BaseTest {
     void testTotem_HealthRestoredAfterDelay() throws InterruptedException {
         // Подготовка
         GameTime gameTime = createRealGameTime();
-        Totem totem = new Totem(gameTime);
+
         Player player = createTestPlayer();
         Map map = createTestMap();
-
+        Totem totem = new Totem(gameTime,map,player);
         // Имитируем ввод "1" (да)
         String input = "1\n";
         InputStream mockIn = new ByteArrayInputStream(input.getBytes());

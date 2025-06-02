@@ -19,9 +19,10 @@ class WarriorTowerTest extends BaseTest {
     void testWarriorTower_BonusAppliedAfterDelay() throws InterruptedException {
         // Подготовка
         GameTime gameTime = createRealGameTime();
-        WarriorTower tower = new WarriorTower(gameTime);
+
         Player player = createTestPlayer();
         Map map = createTestMap();
+        WarriorTower tower = new WarriorTower(gameTime,map,player);
 
         // Имитируем ввод "1" (да)
         String input = "1\n";  // "\n" — имитация нажатия Enter
